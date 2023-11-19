@@ -19,28 +19,35 @@ function readyDiscord() {
 }
 
 function validTeamOption(interaction) {
-    if (!interaction.options.getString('team')) return true;
-
+    if (!interaction.options.getString('team')) return interaction.reply(`Go Birds`);
+    
+    let result = false;
     let teamName = interaction.options.getString('team').split(' ')[0];
-    return !!allTeams.find(t => t.name == teamName);
+    result = !!allTeams.find(t => t.name == teamName);
+
+    if(!result) interaction.reply(`No team named ${teamName} found`)
+    return result;
 }
 
 async function handleInteraction(interaction) {
     if (!interaction.isCommand()) return;
 
-    if (interaction.commandName == 'statsbot') {
-        await stats.execute(interaction);
-    }
-
-    if (!validTeamOption(interaction)) return interaction.reply(`No team named ${interaction.options.getString('team').split(' ')[0]} found`);
-
-    if (interaction.commandName == 'records') {
-        await records.execute(interaction);
-    }
-
-    if (interaction.commandName == 'upcoming') {
-        await upcoming.execute(interaction);
-    }  
+    switch(interaction.commandName) {
+        case "statsbot":
+            await stats.execute(interaction);
+            break;
+        case "records":
+            if (!validTeamOption(interaction)) break;
+            await records.execute(interaction);
+            break;
+        case "upcoming":
+            if (!validTeamOption(interaction)) break;
+            await upcoming.execute(interaction);
+            break;
+        default:
+            interaction.reply(`Invalid Command`);
+            break;
+    } 
 }
 
 client.once(Events.ClientReady, readyDiscord)
