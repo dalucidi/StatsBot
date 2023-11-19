@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
         option.setName('team')
         .setDescription('The team who\'s standing to check')
         .setRequired(true)
-        .addChoices(...nfcTeams.teams)
+        .setAutocomplete(true)
     );
 
 export async function execute(interaction) {

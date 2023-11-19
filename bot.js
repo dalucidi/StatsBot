@@ -3,12 +3,16 @@ import {config} from 'dotenv';
 import * as stats from './commands/stats.js'
 import * as afc from './commands/afc.js'
 import * as nfc from './commands/nfc.js'
+import * as afcTeams from './afc-teams.js'
+import * as nfcTeams from './nfc-teams.js'
 
 config();
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds],
 })
+
+const allTeams = afcTeams.teams.concat(nfcTeams.teams);
 
 function readyDiscord() {
     console.log('I\'m Ready! ' + client.user.tag);
@@ -34,3 +38,13 @@ client.once(Events.ClientReady, readyDiscord)
 client.login(process.env.TOKEN);
 
 client.on(Events.InteractionCreate, handleInteraction)
+
+client.on(Events.InteractionCreate, (interaction) => {
+    if (!interaction.isAutocomplete()) return;
+    if (interaction.commandName !== 'recordsnfc' && interaction.commandName !== 'recordsafc') return;
+
+    const focusedValue = interaction.options.getFocused();
+    const filteredChoices = allTeams.filter((team) => team.name.toLowerCase().startsWith(focusedValue.toLowerCase()));
+
+    interaction.respond(filteredChoices.slice(0, 25)).catch(() => {});
+})
