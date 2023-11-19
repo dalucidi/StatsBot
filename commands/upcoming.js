@@ -10,6 +10,10 @@ export const data = new SlashCommandBuilder()
         .setAutocomplete(true)
     );
 
+function dateConversion(date) {
+    return new Date(date).toLocaleString();
+}
+
 export async function execute(interaction) {
     const team = interaction.options.getString('team');
     const teamData = team.split(' ');
@@ -21,5 +25,5 @@ export async function execute(interaction) {
     await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${teamData[1]}/schedule`)
         .then(async (response) => await response.json())
         .then((obj) => obj['events'].filter(o => o['week'].number == week))
-        .then((upcoming) => upcoming.length > 0 ? interaction.reply(`Week #${week} ${upcoming[0]['name']}`) : interaction.reply(`Week #${week} is ${teamData[0]} Bye Week`) )
+        .then((upcoming) => upcoming.length > 0 ? interaction.reply(`Week #${week} - ${upcoming[0]['name']} - ${dateConversion(upcoming[0]['date'])} EST`) : interaction.reply(`Week #${week} is ${teamData[0]} Bye Week`) )
 }
