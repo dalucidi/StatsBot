@@ -3,8 +3,8 @@
 StatsBot is my personal NFL stats fetcher.
 
 # Commands
-/statsbot - Hello World
+/statsbot - A list of commands
 
-/recordsafc {AFC team name} - Gets the current record for a given AFC team
+/records {team name} - Gets the current record for a given team
 
-/recordsnfc {NFC team name} - Gets the current record for a given NFC team
+/upcoming {team name} - Gets a teams matchup for the week
