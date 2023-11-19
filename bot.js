@@ -5,6 +5,7 @@ import * as records from './commands/records.js'
 import * as upcoming from './commands/upcoming.js'
 import * as birds from './commands/birds.js'
 import * as leaders from './commands/leaders.js'
+import * as scoreboard from './commands/scoreboard.js'
 import * as afcTeams from './afc-teams.js'
 import * as nfcTeams from './nfc-teams.js'
 
@@ -52,6 +53,10 @@ async function handleInteraction(interaction) {
         case "leaders":
             await leaders.execute(interaction);
             break;
+        case "scoreboard":
+            if (!validTeamOption(interaction)) break;
+            await scoreboard.execute(interaction);
+            break;
         default:
             interaction.reply(`Birds birds birds (Invalid Command)`);
             break;
@@ -66,10 +71,10 @@ client.on(Events.InteractionCreate, handleInteraction)
 
 client.on(Events.InteractionCreate, (interaction) => {
     if (!interaction.isAutocomplete()) return;
-    if (interaction.commandName !== 'records' && interaction.commandName !== 'upcoming') return;
+    if (interaction.commandName !== 'records' && interaction.commandName !== 'upcoming' && interaction.commandName !== 'scoreboard') return;
 
-        const focusedValue = interaction.options.getFocused();
-        const filteredChoices = allTeams.filter((team) => team.name.toLowerCase().startsWith(focusedValue.toLowerCase()));
+    const focusedValue = interaction.options.getFocused();
+    const filteredChoices = allTeams.filter((team) => team.name.toLowerCase().startsWith(focusedValue.toLowerCase()));
 
-        interaction.respond(filteredChoices.slice(0, 25)).catch(() => {});
-    })
+    interaction.respond(filteredChoices.slice(0, 25)).catch(() => {});
+})
