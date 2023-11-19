@@ -18,6 +18,13 @@ function readyDiscord() {
     console.log('I\'m Ready! ' + client.user.tag);
 }
 
+function validTeamOption(interaction) {
+    if (!interaction.options.getString('team')) return true;
+    
+    let teamName = interaction.options.getString('team').split(' ')[0];
+    return !!allTeams.find(t => t.name == teamName);
+}
+
 async function handleInteraction(interaction) {
     if (!interaction.isCommand()) return;
 
@@ -25,13 +32,15 @@ async function handleInteraction(interaction) {
         await stats.execute(interaction);
     }
 
+    if (!validTeamOption(interaction)) return interaction.reply(`No team named ${interaction.options.getString('team').split(' ')[0]} found`);
+
     if (interaction.commandName == 'records') {
         await records.execute(interaction);
     }
 
     if (interaction.commandName == 'upcoming') {
         await upcoming.execute(interaction);
-    }
+    }  
 }
 
 client.once(Events.ClientReady, readyDiscord)
