@@ -1,9 +1,8 @@
 import { SlashCommandBuilder } from 'discord.js'
-import * as nfcTeams from '../nfc-teams.js'
 
 export const data = new SlashCommandBuilder()
-    .setName('recordsnfc')
-    .setDescription('Gets the current record of a given NFC team')
+    .setName('records')
+    .setDescription('Gets the current record of a given team')
     .addStringOption(option => 
         option.setName('team')
         .setDescription('The team who\'s standing to check')

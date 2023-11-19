@@ -1,8 +1,7 @@
 import {Client, Events, GatewayIntentBits} from 'discord.js';
 import {config} from 'dotenv';
 import * as stats from './commands/stats.js'
-import * as afc from './commands/afc.js'
-import * as nfc from './commands/nfc.js'
+import * as records from './commands/records.js'
 import * as afcTeams from './afc-teams.js'
 import * as nfcTeams from './nfc-teams.js'
 
@@ -23,13 +22,9 @@ async function handleInteraction(interaction) {
     if (interaction.commandName == 'statsbot') {
         await stats.execute(interaction);
     }
-    if (interaction.commandName == 'recordsafc') {
+    if (interaction.commandName == 'records') {
 
-        await afc.execute(interaction);
-    }
-    if (interaction.commandName == 'recordsnfc') {
-
-        await nfc.execute(interaction);
+        await records.execute(interaction);
     }
 }
 
@@ -41,7 +36,7 @@ client.on(Events.InteractionCreate, handleInteraction)
 
 client.on(Events.InteractionCreate, (interaction) => {
     if (!interaction.isAutocomplete()) return;
-    if (interaction.commandName !== 'recordsnfc' && interaction.commandName !== 'recordsafc') return;
+    if (interaction.commandName !== 'records') return;
 
     const focusedValue = interaction.options.getFocused();
     const filteredChoices = allTeams.filter((team) => team.name.toLowerCase().startsWith(focusedValue.toLowerCase()));
