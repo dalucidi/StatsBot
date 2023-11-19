@@ -11,4 +11,6 @@ StatsBot is my personal NFL stats fetcher.
 
 /leaders {stat type} - Gets the top 5 players for a given stat
 
+/scoreboard {team name} - Gets the score for a team if they play today
+
 /birds - birds birds birds
