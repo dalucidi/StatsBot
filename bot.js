@@ -1,6 +1,6 @@
 import {Client, Events, GatewayIntentBits} from 'discord.js';
 import {config} from 'dotenv';
-import * as stats from './commands/stats.js'
+import * as stats from './commands/statsbot.js'
 import * as records from './commands/records.js'
 import * as upcoming from './commands/upcoming.js'
 import * as afcTeams from './afc-teams.js'
@@ -20,7 +20,7 @@ function readyDiscord() {
 
 function validTeamOption(interaction) {
     if (!interaction.options.getString('team')) return true;
-    
+
     let teamName = interaction.options.getString('team').split(' ')[0];
     return !!allTeams.find(t => t.name == teamName);
 }
