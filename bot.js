@@ -3,6 +3,7 @@ import {config} from 'dotenv';
 import * as stats from './commands/statsbot.js'
 import * as records from './commands/records.js'
 import * as upcoming from './commands/upcoming.js'
+import * as birds from './commands/birds.js'
 import * as afcTeams from './afc-teams.js'
 import * as nfcTeams from './nfc-teams.js'
 
@@ -20,7 +21,7 @@ function readyDiscord() {
 
 function validTeamOption(interaction) {
     if (!interaction.options.getString('team')) return interaction.reply(`Go Birds`);
-    
+
     let result = false;
     let teamName = interaction.options.getString('team').split(' ')[0];
     result = !!allTeams.find(t => t.name == teamName);
@@ -43,6 +44,9 @@ async function handleInteraction(interaction) {
         case "upcoming":
             if (!validTeamOption(interaction)) break;
             await upcoming.execute(interaction);
+            break;
+        case "birds":
+            await birds.execute(interaction);
             break;
         default:
             interaction.reply(`Invalid Command`);
