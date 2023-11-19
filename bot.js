@@ -53,7 +53,7 @@ async function handleInteraction(interaction) {
             await leaders.execute(interaction);
             break;
         default:
-            interaction.reply(`Invalid Command`);
+            interaction.reply(`Birds birds birds (Invalid Command)`);
             break;
     } 
 }

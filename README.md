@@ -9,4 +9,6 @@ StatsBot is my personal NFL stats fetcher.
 
 /upcoming {team name} - Gets a teams matchup for the week
 
+/leaders {stat type} - Gets the top 5 players for a given stat
+
 /birds - birds birds birds
