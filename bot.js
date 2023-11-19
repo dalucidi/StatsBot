@@ -14,7 +14,7 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds],
 })
 
-const allTeams = afcTeams.teams.concat(nfcTeams.teams);
+const allTeams = afcTeams.teams.concat(nfcTeams.teams).sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
 function readyDiscord() {
     console.log('I\'m Ready! ' + client.user.tag);
