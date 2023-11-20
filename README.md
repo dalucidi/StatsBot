@@ -31,4 +31,4 @@ TOKEN={ Your bots token }
 5. run `node .\deploy-commands.js` to publish commands
 6. run `node .\bot.js` to run
 
-NOTE: This project uses the [discord.js](https://discord.js.org/docs/packages/discord.js/14.14.1)https://discord.js.org/docs/packages/discord.js/14.14.1 module which requires a minimum of Node.js v16.11.0
+NOTE: This project uses the [discord.js](https://discord.js.org/) module which requires a **minimum** of Node.js v16.11.0
