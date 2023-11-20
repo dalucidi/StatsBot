@@ -28,5 +28,5 @@ CLIENTID={ The Application ID of your bot }
 SERVERID={ A comma separated list (no spaces) of the ID's of the servers you want to be able to publish commands to}
 TOKEN={ Your bots token }
 ```
-5. run `node .\deploy-commands.js` to publsh commands
+5. run `node .\deploy-commands.js` to publish commands
 6. run `node .\bot.js` to run
