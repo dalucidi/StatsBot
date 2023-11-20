@@ -25,7 +25,7 @@ Should you choose to fork this repo for your own use and customization, below ar
 4. add a `.env` file at the same level as the `bot.js` file, and add the following to the file -
 ```
 CLIENTID={ The Application ID of your bot }
-SERVERID={ A comma separated list (no spaces) of the ID's of the servers you want to be able to publish commands to}
+SERVERID={ A comma separated list (no spaces) of IDs of the servers you want to publish commands to}
 TOKEN={ Your bots token }
 ```
 5. run `node .\deploy-commands.js` to publish commands
