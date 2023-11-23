@@ -5,5 +5,5 @@ export const data = new SlashCommandBuilder()
     .setDescription('birds birds birds');
 
 export async function execute(interaction) {
-    await interaction.reply('Go Birds!');
+    await interaction.reply('Go Birds!\nhttps://www.youtube.com/watch?v=LXifQuzaVc8');
 }
