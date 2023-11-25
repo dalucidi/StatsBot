@@ -10,7 +10,18 @@ export const data = new SlashCommandBuilder()
         .setAutocomplete(true)
     );
 
-export async function execute(interaction) {
+function parseTeams(teams, allTeams) {
+    let logos = [];
+    teams.forEach(team => {
+        let value = allTeams.filter(at => at.name == team);
+        let splitName = value[0].value.split(' ');
+        logos.push(splitName[2]);
+    })
+
+    return logos;
+}
+
+export async function execute(interaction, allTeams) {
     try {
         let dd = new Date().getDate().toString();
         if (dd < 10) dd = '0' + dd;
@@ -40,9 +51,11 @@ export async function execute(interaction) {
                 compScore2 = `**${compScore2}**`;
             }
 
+            let logos = parseTeams([competitors[0]['team']['name'], competitors[1]['team']['name']], allTeams)
+
             message = `__**SCORE BOARD**__` +
-            `\n${competitors[0]['team']['location']} ${competitors[0]['team']['name']}: ${compScore1}` + 
-            `\n${competitors[1]['team']['location']} ${competitors[1]['team']['name']}: ${compScore2}`;
+            `\n${competitors[0]['team']['location']} ${competitors[0]['team']['name']}: ${compScore1} ${logos[0]}` + 
+            `\n${competitors[1]['team']['location']} ${competitors[1]['team']['name']}: ${compScore2} ${logos[1]}`;
 
             interaction.reply(message);
         }

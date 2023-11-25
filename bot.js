@@ -56,7 +56,7 @@ async function handleInteraction(interaction) {
             break;
         case "scoreboard":
             if (!validTeamOption(interaction)) break;
-            await scoreboard.execute(interaction);
+            await scoreboard.execute(interaction, allTeams);
             break;
         case "weekly":
             await weekly.execute(interaction, allTeams);
