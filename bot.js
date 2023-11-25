@@ -46,7 +46,7 @@ async function handleInteraction(interaction) {
             break;
         case "upcoming":
             if (!validTeamOption(interaction)) break;
-            await upcoming.execute(interaction);
+            await upcoming.execute(interaction, allTeams);
             break;
         case "birds":
             await birds.execute(interaction);

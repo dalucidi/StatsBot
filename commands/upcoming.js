@@ -14,7 +14,19 @@ function dateConversion(date) {
     return new Date(date).toLocaleString();
 }
 
-export async function execute(interaction) {
+function parseTeams(teams, allTeams) {
+    let teamSplit = teams.split(' at ');
+    let logos = [];
+    allTeams.forEach(at => teamSplit.forEach(t => {
+        if(t.includes(at.name)) {
+            let value = at.value.split(' ')
+            logos.push(value[2]);
+        }
+    }))
+    return logos;
+}
+
+export async function execute(interaction, allTeams) {
     try {
         const currentYear = new Date().getFullYear();
         const team = interaction.options.getString('team');
@@ -27,7 +39,10 @@ export async function execute(interaction) {
         await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${teamData[1]}/schedule`)
             .then(async (response) => await response.json())
             .then((obj) => obj['events'].filter(o => o['week'].number == week))
-            .then((upcoming) => upcoming.length > 0 ? interaction.reply(`Week #${week} - ${upcoming[0]['name']} - ${dateConversion(upcoming[0]['date'])} EST`) : interaction.reply(`Week #${week} is ${teamData[0]} Bye Week`) )
+            .then((upcoming) => {
+                let logos = parseTeams(upcoming[0]['name'], allTeams)
+                upcoming.length > 0 ? interaction.reply(`Week #${week} - ${logos[0]} ${upcoming[0]['name']} ${logos[1]} - ${dateConversion(upcoming[0]['date'])} EST`) : interaction.reply(`Week #${week} is ${teamData[0]} Bye Week`) 
+            })
     }
     catch (error) {
         interaction.reply('Something went wrong. Anyways go birds');
