@@ -13,7 +13,11 @@ StatsBot is my personal NFL stats fetcher.
 
 /scoreboard {team name} - Gets the score for a team if they play today
 
+/weekly - Gets a list of all games for the week
+
 /birds - birds birds birds
+
+/statsbot - A helpful list of commands
 
 
 # Forking
