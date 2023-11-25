@@ -9,14 +9,14 @@ function dateConversion(date) {
 }
 
 export async function execute(interaction) {
-    let allEventsJson = [];
     let eventEndpoints = [];
     let message = '';
     await fetch('https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/events')
     .then(response => response.json())
-    .then(obj => allEventsJson = obj['items'])
-
-    allEventsJson.forEach(event => eventEndpoints.push(fetch(`${event['$ref']}`).then(resp => resp.json())));
+    .then(obj => obj['items'])
+    .then(allEventsJson => {
+        allEventsJson.forEach(event => eventEndpoints.push(fetch(`${event['$ref']}`).then(resp => resp.json())))
+    })
 
     Promise.all(eventEndpoints)
         .then((resp) => {
