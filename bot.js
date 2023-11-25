@@ -6,6 +6,7 @@ import * as upcoming from './commands/upcoming.js'
 import * as birds from './commands/birds.js'
 import * as leaders from './commands/leaders.js'
 import * as scoreboard from './commands/scoreboard.js'
+import * as weekly from './commands/weekly.js'
 import * as afcTeams from './afc-teams.js'
 import * as nfcTeams from './nfc-teams.js'
 
@@ -56,6 +57,9 @@ async function handleInteraction(interaction) {
         case "scoreboard":
             if (!validTeamOption(interaction)) break;
             await scoreboard.execute(interaction);
+            break;
+        case "weekly":
+            await weekly.execute(interaction);
             break;
         default:
             interaction.reply(`Birds birds birds (Invalid Command)`);
