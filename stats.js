@@ -5,7 +5,7 @@ export const types = [
     { name: 'Passing Touchdowns', value: 'Passing-Touchdowns 7'},
     { name: 'Passing Yards', value: 'Passing-Yards 0'},
     { name: 'Punt Yards', value: 'Punt-Yards 14'},
-    { name: 'Quarterback Rating', value: 'Quarterback Rating 8'},
+    { name: 'Quarterback Rating', value: 'Quarterback-Rating 8'},
     { name: 'Receiving Yards', value: 'Receiving-Yards 2'},
     { name: 'Receiving Touchdowns', value: 'Receiving-Touchdowns 11'},
     { name: 'Receptions', value: 'Receptions 10'},
