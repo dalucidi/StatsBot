@@ -16,7 +16,6 @@ function parseTeams(teamNo, allTeams) {
     allTeams.forEach(at => {
         if (at.value.includes(' ' + teamNo + ' ')) {
             let value = at.value.split(' ');
-            console.log(`${value[0]} ${value[2]}`);
             team = `${value[0]} ${value[2]}`;
         }
     })
