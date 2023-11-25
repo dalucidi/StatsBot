@@ -30,6 +30,7 @@ export async function execute(interaction) {
             .then((upcoming) => upcoming.length > 0 ? interaction.reply(`Week #${week} - ${upcoming[0]['name']} - ${dateConversion(upcoming[0]['date'])} EST`) : interaction.reply(`Week #${week} is ${teamData[0]} Bye Week`) )
     }
     catch (error) {
+        interaction.reply('Something went wrong. Anyways go birds');
         console.log(error);
     }
 }

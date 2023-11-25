@@ -38,6 +38,7 @@ export async function execute(interaction) {
             .then(() => interaction.reply(message));
     }
     catch (error) {
+        interaction.reply('Something went wrong. Anyways go birds');
         console.log(error);
     }
 }

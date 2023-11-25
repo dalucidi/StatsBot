@@ -21,6 +21,7 @@ export async function execute(interaction) {
             .then((record) => interaction.reply(`The ${teamData[0]} currently stand at ` + record))
     }
     catch (error) {
+        interaction.reply('Something went wrong. Anyways go birds');
         console.log(error);
     }
 }
