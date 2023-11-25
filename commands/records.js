@@ -18,7 +18,7 @@ export async function execute(interaction) {
         await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${currentYear}/types/2/teams/${teamData[1]}/record`)
             .then(async (response) => await response.json())
             .then((obj) => obj['items'][0]['summary'])
-            .then((record) => interaction.reply(`The ${teamData[0]} currently stand at ` + record))
+            .then((record) => interaction.reply(`The ${teamData[0]} currently stand at ` + record + ` ${teamData[2]}`))
     }
     catch (error) {
         interaction.reply('Something went wrong. Anyways go birds');
