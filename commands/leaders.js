@@ -11,8 +11,21 @@ export const data = new SlashCommandBuilder()
         .addChoices(...stats.types)
     );
 
-export async function execute(interaction) {
+function parseTeams(teamNo, allTeams) {
+    let team = '';
+    allTeams.forEach(at => {
+        if (at.value.includes(' ' + teamNo + ' ')) {
+            let value = at.value.split(' ');
+            console.log(`${value[0]} ${value[2]}`);
+            team = `${value[0]} ${value[2]}`;
+        }
+    })
+    return team;
+}
+
+export async function execute(interaction, allTeams) {
     try {
+        const teamApiCall = 'http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2023/teams/';
         const currentYear = new Date().getFullYear();
         const stat = interaction.options.getString('stat');
         const statData = stat.split(' ');
@@ -31,7 +44,12 @@ export async function execute(interaction) {
             .then((resp) => {
                 let counter = 0;
                 resp.forEach(obj => {
-                    message += `\n#${counter+1} ${obj['fullName']}: ${players[counter]['value']}`
+                    let teamEndpoint = obj['team']['$ref'];
+                    teamEndpoint = teamEndpoint.replace(teamApiCall, '');
+                    teamEndpoint = teamEndpoint.replace('?lang=en&region=us', '')
+                    let teamNameLogo = parseTeams(teamEndpoint, allTeams)
+
+                    message += `\n**#${counter+1}** ${obj['fullName']} - ${teamNameLogo}   **:**   **${players[counter]['value']}**`
                     counter++;
                 })
             })

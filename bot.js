@@ -52,7 +52,7 @@ async function handleInteraction(interaction) {
             await birds.execute(interaction);
             break;
         case "leaders":
-            await leaders.execute(interaction);
+            await leaders.execute(interaction, allTeams);
             break;
         case "scoreboard":
             if (!validTeamOption(interaction)) break;
