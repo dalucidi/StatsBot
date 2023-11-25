@@ -16,13 +16,18 @@ function dateConversion(date) {
 
 function parseTeams(teams, allTeams) {
     let teamSplit = teams.split(' at ');
+    let teamNames = [];
+    teamSplit.forEach(ts => {
+        let nameHolder = ts.split(' ');
+        teamNames.push(nameHolder[nameHolder.length - 1]);
+    })
     let logos = [];
-    allTeams.forEach(at => teamSplit.forEach(t => {
-        if(t.includes(at.name)) {
-            let value = at.value.split(' ')
-            logos.push(value[2]);
-        }
-    }))
+    teamNames.forEach(team => {
+        let value = allTeams.filter(at => at.name == team);
+        let splitName = value[0].value.split(' ');
+        logos.push(splitName[2]);
+    })
+
     return logos;
 }
 

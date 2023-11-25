@@ -59,7 +59,7 @@ async function handleInteraction(interaction) {
             await scoreboard.execute(interaction);
             break;
         case "weekly":
-            await weekly.execute(interaction);
+            await weekly.execute(interaction, allTeams);
             break;
         default:
             interaction.reply(`Birds birds birds (Invalid Command)`);

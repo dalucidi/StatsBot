@@ -8,7 +8,24 @@ function dateConversion(date) {
     return new Date(date).toLocaleString();
 }
 
-export async function execute(interaction) {
+function parseTeams(teams, allTeams) {
+    let teamSplit = teams.split(' at ');
+    let teamNames = [];
+    teamSplit.forEach(ts => {
+        let nameHolder = ts.split(' ');
+        teamNames.push(nameHolder[nameHolder.length - 1]);
+    })
+    let logos = [];
+    teamNames.forEach(team => {
+        let value = allTeams.filter(at => at.name == team);
+        let splitName = value[0].value.split(' ');
+        logos.push(splitName[2]);
+    })
+
+    return logos;
+}
+
+export async function execute(interaction, allTeams) {
     try {
         let eventEndpoints = [];
         let message = '';
@@ -25,7 +42,10 @@ export async function execute(interaction) {
                 resp.sort(function(a,b){
                     return new Date(a['date']) - new Date(b['date']);
                 });
-                resp.forEach(event => message += (`${event['name']} - ${dateConversion(event['date'])} EST\n`))
+                resp.forEach(event => {
+                    let logos = parseTeams(event['name'], allTeams)
+                    message += (`${logos[0]} ${event['name']} ${logos[1]} - ${dateConversion(event['date'])} EST\n`)
+                })
             })
             .then(() => interaction.reply(message))
     } 
