@@ -10,6 +10,8 @@ export async function execute(interaction) {
     **/upcoming {*team name*}** - Gets a teams matchup for the week\n\
     **/leaders {*stat type*}** - Gets the top 5 players for a given stat\n\
     **/scoreboard {*team name*}** - Gets the score for a team if they play today\n\
-    **/birds** - birds birds birds');
+    **/weekly** - Gets a list of all games for the week\n\
+    **/birds** - birds birds birds\n\
+    **/statsbot** - This helpful list of commands');
 }
 
