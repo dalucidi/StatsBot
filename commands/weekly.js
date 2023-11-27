@@ -5,7 +5,10 @@ export const data = new SlashCommandBuilder()
     .setDescription('Get a list of this weeks games');
 
 function dateConversion(date) {
-    return new Date(date).toLocaleString();
+    let dateObj = new Date(date);
+    let dateString = dateObj.toLocaleString() + ' EST';
+    if (dateObj.getDate() == new Date().getDate() && dateObj.getMonth() == new Date().getMonth()) dateString = `**${dateString}**`;
+    return dateString;
 }
 
 function parseTeams(teams, allTeams) {
@@ -44,7 +47,7 @@ export async function execute(interaction, allTeams) {
                 });
                 resp.forEach(event => {
                     let logos = parseTeams(event['name'], allTeams)
-                    message += (`${logos[0]} ${event['name']} ${logos[1]} - ${dateConversion(event['date'])} EST\n`)
+                    message += (`${logos[0]} ${event['name']} ${logos[1]} - ${dateConversion(event['date'])}\n`)
                 })
             })
             .then(() => interaction.reply(message))
