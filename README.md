@@ -17,8 +17,6 @@ StatsBot is my personal NFL stats fetcher.
 
 /birds - birds birds birds
 
-/statsbot - A helpful list of commands
-
 
 # Forking
 Should you choose to fork this repo for your own use and customization, below are steps to get you started.
