@@ -58,7 +58,7 @@ const {
   subresourceSet
 } = require('./constants')
 const EE = require('node:events')
-const { Readable, pipeline } = require('node:stream')
+const { Readable, pipeline, finished } = require('node:stream')
 const { addAbortListener, isErrored, isReadable, nodeMajor, nodeMinor, bufferToLowerCasedHeaderName } = require('../../core/util')
 const { dataURLProcessor, serializeAMimeType, minimizeSupportedMimeType } = require('./data-url')
 const { getGlobalDispatcher } = require('../../global')
@@ -1080,42 +1080,19 @@ function fetchFinale (fetchParams, response) {
   if (internalResponse.body == null) {
     processResponseEndOfBody()
   } else {
+    // mcollina: all the following steps of the specs are skipped.
+    // The internal transform stream is not needed.
+    // See https://github.com/nodejs/undici/pull/3093#issuecomment-2050198541
+
     // 1. Let transformStream be a new TransformStream.
     // 2. Let identityTransformAlgorithm be an algorithm which, given chunk, enqueues chunk in transformStream.
     // 3. Set up transformStream with transformAlgorithm set to identityTransformAlgorithm and flushAlgorithm
     //    set to processResponseEndOfBody.
-    const transformStream = new TransformStream({
-      start () { },
-      transform (chunk, controller) {
-        controller.enqueue(chunk)
-      },
-      flush: processResponseEndOfBody
-    })
-
     // 4. Set internalResponse’s body’s stream to the result of internalResponse’s body’s stream piped through transformStream.
-    internalResponse.body.stream.pipeThrough(transformStream)
 
-    const byteStream = new ReadableStream({
-      readableStream: transformStream.readable,
-      async start () {
-        this._bodyReader = this.readableStream.getReader()
-      },
-      async pull (controller) {
-        while (controller.desiredSize >= 0) {
-          const { done, value } = await this._bodyReader.read()
-
-          if (done) {
-            queueMicrotask(() => readableStreamClose(controller))
-            break
-          }
-
-          controller.enqueue(value)
-        }
-      },
-      type: 'bytes'
+    finished(internalResponse.body.stream, () => {
+      processResponseEndOfBody()
     })
-
-    internalResponse.body.stream = byteStream
   }
 }
 
@@ -2141,29 +2118,6 @@ async function httpNetworkFetch (
               codings = contentEncoding.toLowerCase().split(',').map((x) => x.trim())
             }
             location = headersList.get('location', true)
-          } else {
-            const keys = Object.keys(rawHeaders)
-            for (let i = 0; i < keys.length; ++i) {
-              // The header names are already in lowercase.
-              const key = keys[i]
-              const value = rawHeaders[key]
-              if (key === 'set-cookie') {
-                for (let j = 0; j < value.length; ++j) {
-                  headersList.append(key, value[j], true)
-                }
-              } else {
-                headersList.append(key, value, true)
-              }
-            }
-            // For H2, The header names are already in lowercase,
-            // so we can avoid the `HeadersList#get` call here.
-            const contentEncoding = rawHeaders['content-encoding']
-            if (contentEncoding) {
-              // https://www.rfc-editor.org/rfc/rfc7231#section-3.1.2.1
-              // "All content-coding values are case-insensitive..."
-              codings = contentEncoding.toLowerCase().split(',').map((x) => x.trim()).reverse()
-            }
-            location = rawHeaders.location
           }
 
           this.body = new Readable({ read: resume })

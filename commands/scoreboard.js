@@ -36,9 +36,12 @@ export async function execute(interaction, allTeams) {
             .then(async (response) => await response.json())
             .then((obj) => events = obj['events'])
         
-        events.forEach(event => {
-            if (event['name'].includes(`${teamData[0]}`)) todaysGame = event
-        })
+        if (events?.length > 0) {
+            events.forEach(event => {
+                if (event['name'].includes(`${teamData[0]}`)) todaysGame = event
+            })
+        }
+        console.log(todaysGame);
         if (!todaysGame) {
             interaction.reply(message);
         } else {

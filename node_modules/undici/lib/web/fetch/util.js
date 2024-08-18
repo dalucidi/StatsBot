@@ -11,11 +11,15 @@ const assert = require('node:assert')
 const { isUint8Array } = require('node:util/types')
 const { webidl } = require('./webidl')
 
+let supportedHashes = []
+
 // https://nodejs.org/api/crypto.html#determining-if-crypto-support-is-unavailable
 /** @type {import('crypto')} */
 let crypto
 try {
   crypto = require('node:crypto')
+  const possibleRelevantHashes = ['sha256', 'sha384', 'sha512']
+  supportedHashes = crypto.getHashes().filter((hash) => possibleRelevantHashes.includes(hash))
 /* c8 ignore next 3 */
 } catch {
 
@@ -69,14 +73,13 @@ function responseLocationURL (response, requestFragment) {
  * @returns {boolean}
  */
 function isValidEncodedURL (url) {
-  for (const c of url) {
-    const code = c.charCodeAt(0)
-    // Not used in US-ASCII
-    if (code >= 0x80) {
-      return false
-    }
-    // Control characters
-    if ((code >= 0x00 && code <= 0x1F) || code === 0x7F) {
+  for (let i = 0; i < url.length; ++i) {
+    const code = url.charCodeAt(i)
+
+    if (
+      code > 0x7E || // Non-US-ASCII + DEL
+      code < 0x20 // Control characters NUL - US
+    ) {
       return false
     }
   }
@@ -156,24 +159,15 @@ const isValidHeaderName = isValidHTTPToken
 function isValidHeaderValue (potentialValue) {
   // - Has no leading or trailing HTTP tab or space bytes.
   // - Contains no 0x00 (NUL) or HTTP newline bytes.
-  if (
-    potentialValue.startsWith('\t') ||
-    potentialValue.startsWith(' ') ||
-    potentialValue.endsWith('\t') ||
-    potentialValue.endsWith(' ')
-  ) {
-    return false
-  }
-
-  if (
-    potentialValue.includes('\0') ||
+  return (
+    potentialValue[0] === '\t' ||
+    potentialValue[0] === ' ' ||
+    potentialValue[potentialValue.length - 1] === '\t' ||
+    potentialValue[potentialValue.length - 1] === ' ' ||
+    potentialValue.includes('\n') ||
     potentialValue.includes('\r') ||
-    potentialValue.includes('\n')
-  ) {
-    return false
-  }
-
-  return true
+    potentialValue.includes('\0')
+  ) === false
 }
 
 // https://w3c.github.io/webappsec-referrer-policy/#set-requests-referrer-policy-on-redirect
@@ -565,66 +559,56 @@ function bytesMatch (bytes, metadataList) {
     return true
   }
 
-  // 3. If parsedMetadata is the empty set, return true.
+  // 3. If response is not eligible for integrity validation, return false.
+  // TODO
+
+  // 4. If parsedMetadata is the empty set, return true.
   if (parsedMetadata.length === 0) {
     return true
   }
 
-  // 4. Let metadata be the result of getting the strongest
+  // 5. Let metadata be the result of getting the strongest
   //    metadata from parsedMetadata.
-  const list = parsedMetadata.sort((c, d) => d.algo.localeCompare(c.algo))
-  // get the strongest algorithm
-  const strongest = list[0].algo
-  // get all entries that use the strongest algorithm; ignore weaker
-  const metadata = list.filter((item) => item.algo === strongest)
+  const strongest = getStrongestMetadata(parsedMetadata)
+  const metadata = filterMetadataListByAlgorithm(parsedMetadata, strongest)
 
-  // 5. For each item in metadata:
+  // 6. For each item in metadata:
   for (const item of metadata) {
     // 1. Let algorithm be the alg component of item.
     const algorithm = item.algo
 
     // 2. Let expectedValue be the val component of item.
-    let expectedValue = item.hash
+    const expectedValue = item.hash
 
     // See https://github.com/web-platform-tests/wpt/commit/e4c5cc7a5e48093220528dfdd1c4012dc3837a0e
     // "be liberal with padding". This is annoying, and it's not even in the spec.
 
-    if (expectedValue.endsWith('==')) {
-      expectedValue = expectedValue.slice(0, -2)
-    }
-
     // 3. Let actualValue be the result of applying algorithm to bytes.
     let actualValue = crypto.createHash(algorithm).update(bytes).digest('base64')
 
-    if (actualValue.endsWith('==')) {
-      actualValue = actualValue.slice(0, -2)
+    if (actualValue[actualValue.length - 1] === '=') {
+      if (actualValue[actualValue.length - 2] === '=') {
+        actualValue = actualValue.slice(0, -2)
+      } else {
+        actualValue = actualValue.slice(0, -1)
+      }
     }
 
     // 4. If actualValue is a case-sensitive match for expectedValue,
     //    return true.
-    if (actualValue === expectedValue) {
-      return true
-    }
-
-    let actualBase64URL = crypto.createHash(algorithm).update(bytes).digest('base64url')
-
-    if (actualBase64URL.endsWith('==')) {
-      actualBase64URL = actualBase64URL.slice(0, -2)
-    }
-
-    if (actualBase64URL === expectedValue) {
+    if (compareBase64Mixed(actualValue, expectedValue)) {
       return true
     }
   }
 
-  // 6. Return false.
+  // 7. Return false.
   return false
 }
 
 // https://w3c.github.io/webappsec-subresource-integrity/#grammardef-hash-with-options
 // https://www.w3.org/TR/CSP2/#source-list-syntax
 // https://www.rfc-editor.org/rfc/rfc5234#appendix-B.1
-const parseHashWithOptions = /(?<algo>sha256|sha384|sha512)-(?<hash>[A-Za-z0-9+/]+={0,2}(?=\s|$))( +[!-~]*)?/i
+const parseHashWithOptions = /(?<algo>sha256|sha384|sha512)-((?<hash>[A-Za-z0-9+/]+|[A-Za-z0-9_-]+)={0,2}(?:\s|$)( +[!-~]*)?)?/i
 
 /**
  * @see https://w3c.github.io/webappsec-subresource-integrity/#parse-metadata
@@ -638,8 +622,6 @@ function parseMetadata (metadata) {
   // 2. Let empty be equal to true.
   let empty = true
 
-  const supportedHashes = crypto.getHashes()
-
   // 3. For each token returned by splitting metadata on spaces:
   for (const token of metadata.split(' ')) {
     // 1. Set empty to false.
@@ -649,7 +631,11 @@ function parseMetadata (metadata) {
     const parsedToken = parseHashWithOptions.exec(token)
 
     // 3. If token does not parse, continue to the next token.
-    if (parsedToken === null || parsedToken.groups === undefined) {
+    if (
+      parsedToken === null ||
+      parsedToken.groups === undefined ||
+      parsedToken.groups.algo === undefined
+    ) {
       // Note: Chromium blocks the request at this point, but Firefox
       // gives a warning that an invalid integrity was given. The
       // correct behavior is to ignore these, and subsequently not
@@ -658,11 +644,11 @@ function parseMetadata (metadata) {
     }
 
     // 4. Let algorithm be the hash-algo component of token.
-    const algorithm = parsedToken.groups.algo
+    const algorithm = parsedToken.groups.algo.toLowerCase()
 
     // 5. If algorithm is a hash function recognized by the user
     //    agent, add the parsed token to result.
-    if (supportedHashes.includes(algorithm.toLowerCase())) {
+    if (supportedHashes.includes(algorithm)) {
       result.push(parsedToken.groups)
     }
   }
@@ -673,6 +659,82 @@ function parseMetadata (metadata) {
   }
 
   return result
+}
+
+/**
+ * @param {{ algo: 'sha256' | 'sha384' | 'sha512' }[]} metadataList
+ */
+function getStrongestMetadata (metadataList) {
+  // Let algorithm be the algo component of the first item in metadataList.
+  // Can be sha256
+  let algorithm = metadataList[0].algo
+  // If the algorithm is sha512, then it is the strongest
+  // and we can return immediately
+  if (algorithm[3] === '5') {
+    return algorithm
+  }
+
+  for (let i = 1; i < metadataList.length; ++i) {
+    const metadata = metadataList[i]
+    // If the algorithm is sha512, then it is the strongest
+    // and we can break the loop immediately
+    if (metadata.algo[3] === '5') {
+      algorithm = 'sha512'
+      break
+    // If the algorithm is sha384, then a potential sha256 or sha384 is ignored
+    } else if (algorithm[3] === '3') {
+      continue
+    // algorithm is sha256, check if algorithm is sha384 and if so, set it as
+    // the strongest
+    } else if (metadata.algo[3] === '3') {
+      algorithm = 'sha384'
+    }
+  }
+  return algorithm
+}
+
+function filterMetadataListByAlgorithm (metadataList, algorithm) {
+  if (metadataList.length === 1) {
+    return metadataList
+  }
+
+  let pos = 0
+  for (let i = 0; i < metadataList.length; ++i) {
+    if (metadataList[i].algo === algorithm) {
+      metadataList[pos++] = metadataList[i]
+    }
+  }
+
+  metadataList.length = pos
+
+  return metadataList
+}
+
+/**
+ * Compares two base64 strings, allowing for base64url
+ * in the second string.
+ *
+* @param {string} actualValue always base64
+ * @param {string} expectedValue base64 or base64url
+ * @returns {boolean}
+ */
+function compareBase64Mixed (actualValue, expectedValue) {
+  if (actualValue.length !== expectedValue.length) {
+    return false
+  }
+  for (let i = 0; i < actualValue.length; ++i) {
+    if (actualValue[i] !== expectedValue[i]) {
+      if (
+        (actualValue[i] === '+' && expectedValue[i] === '-') ||
+        (actualValue[i] === '/' && expectedValue[i] === '_')
+      ) {
+        continue
+      }
+      return false
+    }
+  }
+
+  return true
 }
 
 // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-request
@@ -1097,13 +1159,21 @@ function urlIsLocal (url) {
 
 /**
  * @param {string|URL} url
+ * @returns {boolean}
  */
 function urlHasHttpsScheme (url) {
-  if (typeof url === 'string') {
-    return url.startsWith('https:')
-  }
-
-  return url.protocol === 'https:'
+  return (
+    (
+      typeof url === 'string' &&
+      url[5] === ':' &&
+      url[0] === 'h' &&
+      url[1] === 't' &&
+      url[2] === 't' &&
+      url[3] === 'p' &&
+      url[4] === 's'
+    ) ||
+    url.protocol === 'https:'
+  )
 }
 
 /**
@@ -1495,6 +1565,7 @@ function utf8DecodeBytes (buffer) {
 module.exports = {
   isAborted,
   isCancelled,
+  isValidEncodedURL,
   createDeferredPromise,
   ReadableStreamFrom,
   tryUpgradeRequestToAPotentiallyTrustworthyURL,
