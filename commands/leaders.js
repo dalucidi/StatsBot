@@ -24,14 +24,30 @@ function parseTeams(teamNo, allTeams) {
 
 export async function execute(interaction, allTeams) {
     try {
-        const teamApiCall = 'http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2023/teams/';
         const currentYear = new Date().getFullYear();
+        const teamApiCall = `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${currentYear}/teams/`;
         const stat = interaction.options.getString('stat');
         const statData = stat.split(' ');
         let players = [];
         let message = `**${statData[0]}**`;
         let requests = [];
-        await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${currentYear}/types/2/leaders`)
+        const currentMonth = new Date().getMonth();
+        let seasonType = 0;
+
+        if (currentMonth >= 1) {
+            seasonType = 3;
+        }
+        if (currentMonth >= 2) {
+            seasonType = 4;
+        }
+        if (currentMonth == 7) {
+            seasonType = 1;
+        }
+        if (currentMonth >= 8) {
+            seasonType = 2;
+        }
+
+        await fetch(`https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${currentYear}/types/${seasonType}/leaders`)
             .then(async (response) => await response.json())
             .then((obj) => {
                 players = obj['categories'][statData[1]]['leaders'].slice(0, 5)
