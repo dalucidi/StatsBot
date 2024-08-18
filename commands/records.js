@@ -12,10 +12,10 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
     try {
-        const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
         const team = interaction.options.getString('team');
         const teamData = team.split(' ');
+        const currentMonth = new Date().getMonth();
         let seasonType = 0;
 
         if (currentMonth >= 1) {
