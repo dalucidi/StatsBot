@@ -52,10 +52,10 @@ export async function execute(interaction, allTeams) {
             .then((obj) => {
                 players = obj['categories'][statData[1]]['leaders'].slice(0, 5)
             });
-
+            
         players.forEach(player => requests.push(fetch(`${player['athlete']['$ref']}`).then(resp => resp.json())));
 
-        Promise.all([requests[0], requests[1], requests[2], requests[3], requests[4]])
+        Promise.all(requests)
             .then((resp) => {
                 let counter = 0;
                 resp.forEach(obj => {
