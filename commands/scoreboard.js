@@ -25,7 +25,8 @@ export async function execute(interaction, allTeams) {
     try {
         let dd = new Date().getDate().toString();
         if (dd < 10) dd = '0' + dd;
-        const mm = new Date().getMonth() + 1;
+        let mm = new Date().getMonth() + 1;
+        if (mm < 10) mm = '0' + mm;
         const yyyy = new Date().getFullYear();
         const team = interaction.options.getString('team');
         const teamData = team.split(' ');
